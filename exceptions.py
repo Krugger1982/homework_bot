@@ -10,7 +10,13 @@ class NotJSONError(Exception):
     pass
 
 
-class WrongJSONError(Exception):
+class WrongJSONError(TypeError):
+    """Подкласс Exception."""
+
+    pass
+
+
+class SendMessageError(Exception):
     """Подкласс Exception."""
 
     pass

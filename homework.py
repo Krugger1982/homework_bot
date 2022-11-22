@@ -69,19 +69,18 @@ def get_api_answer(current_timestamp=int(time.time())):
         raise exceptions.WrongResponseError(
             'Ошибка сервера {response.status_code.phrase}'
         )
-    logging.debug('Получен ответ от API Яндекс-Практикума')
+    else:
+        logger.debug('Получен ответ от API Яндекс-Практикума')
     if response.status_code != HTTPStatus.OK:
         raise exceptions.WrongResponseError(
             f'Эндпойнт {ENDPOINT} недоступен. Ошибка {response.status_code}'
         )
-    print(response)
     try:
         response = response.json()
     except JSONDecodeError as e:
         raise exceptions.NotJSONError(
             f'Невозможно привести данные к типам Python. Ошибка: {e}'
         )
-    print(response)
     return response
 
 

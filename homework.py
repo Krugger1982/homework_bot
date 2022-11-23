@@ -46,11 +46,11 @@ HOMEWORK_VERDICTS = {
 def send_message(bot, message):
     """Отправляет сообщение 'message' боту 'bot'."""
     try:
+        logger.debug(f'Бот отправляет сообщение: {message}')
         bot.send_message(
             chat_id=TELEGRAM_CHAT_ID,
             text=message
         )
-        logger.debug(f'Бот отправляет сообщение: {message}')
     except Exception:
         logger.error('Не удалось отправить сообщение')
         raise exceptions.SendMessageError('Не удалось отправить сообщение')
@@ -92,11 +92,11 @@ def check_response(response):
         raise exceptions.WrongJSONError('Ответ не содержит списка работ.')
     if 'current_date' not in response:
         raise exceptions.WrongJSONError('Ответ не содержит отметки времени')
-    if not isinstance(response['homeworks'], list):
+    homeworks = response['homeworks']
+    if not isinstance(homeworks, list):
         raise exceptions.WrongJSONError(
             'Переменная под ключом "homeworks" не в виде списка'
         )
-    homeworks = response['homeworks']
     return homeworks
 
 
@@ -139,8 +139,8 @@ def main():
     # если время не придет (плохой ответ), это выявится в следующем же запросе
     current_timestamp = response.get('current_date')
 
-    # инициируем сообщение об ошибке, чтоб избежать повторных сообщений
-    old_error_message = ''
+    # инициируем сообщение, чтоб избежать повторных сообщений
+    old_message = ''
     while True:
         try:
             response = get_api_answer(current_timestamp)
@@ -149,15 +149,17 @@ def main():
             if homeworks:
                 # сообщение отправляется только в случае изменений
                 message = parse_status(homeworks[0])
-                send_message(bot=bot, message=message)
+                if message != old_message:
+                    send_message(bot=bot, message=message)
+                    old_message = message
             else:
                 message = 'Изменений в статусах работ нет'
                 logger.debug(message)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            if message != old_error_message:
+            if message != old_message:
                 send_message(bot=bot, message=message)
-                old_error_message = message
+                old_message = message
         finally:
             time.sleep(RETRY_PERIOD)
 

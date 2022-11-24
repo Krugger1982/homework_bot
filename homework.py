@@ -157,6 +157,7 @@ def main():
                 logger.debug(message)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
+            logger.error(message)
             if message != old_message:
                 send_message(bot=bot, message=message)
                 old_message = message
